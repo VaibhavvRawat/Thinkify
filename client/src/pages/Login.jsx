@@ -44,10 +44,11 @@ const Login = () => {
   // form submit
   const onSubmit = async (data) => {
     try {
-      const response = await axios.post(
-        `${import.meta.env.VITE_SERVER_ENDPOINT}/users/login`,
-        data
-      );
+     const response = await axios.post(
+  `http://localhost:5000/api/users/login`,
+  data
+);
+
       if (response.data.status) {
         Cookies.set(import.meta.env.VITE_TOKEN_KEY, response.data.token, {
           expires: Number(import.meta.env.VITE_COOKIE_EXPIRES),

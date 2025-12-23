@@ -61,7 +61,7 @@ const login = async (req, res) => {
         const { email, password } = req.body;
         if (!email || !password) {
             return res.status(400).json({ status: false, message: "All fields are required" });
-        }
+        } 
 
         const existingUser = await UserModel.findOne({ email });
         if (!existingUser) {

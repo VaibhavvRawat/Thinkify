@@ -32,4 +32,7 @@ app.get("/", (req, res) => {
     res.send("Server Running Successfully");
 })
 
-app.listen(PORT, () => { console.log(`Server Listening at http://localhost:${PORT}`) });
+app.listen(PORT, () => { 
+    console.log(`Server Listening at http://localhost:${PORT}`) 
+});
+
