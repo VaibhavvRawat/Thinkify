@@ -167,9 +167,8 @@ const ActivityGrid = () => {
                             ? "#EBEDF0"
                             : `rgba(0, 128, 0, ${day.activity / 5})`,
                       }}
-                      title={`${day.date.toDateString()}: ${
-                        day.activity
-                      } contributions`}
+                      title={`${day.date.toDateString()}: ${day.activity
+                        } contributions`}
                     />
                   </Grid>
                 ))}

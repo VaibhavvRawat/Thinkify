@@ -9,6 +9,15 @@ import router from './routes/route.js';
 
 dotenv.config();
 
+// ─── Startup Environment Guard ───────────────────────────────────────────────
+const REQUIRED_ENV_VARS = ["JWT_SECRET_KEY", "BCRYPT_GEN_SALT_NUMBER", "DATABASE_URL", "DATABASE_NAME", "PORT"];
+const missingVars = REQUIRED_ENV_VARS.filter((key) => !process.env[key]);
+if (missingVars.length > 0) {
+    console.error(`❌ Missing required environment variables: ${missingVars.join(", ")}`);
+    console.error("   Please check your server/.env file and restart.");
+    process.exit(1);
+}
+
 const app = express();
 const PORT = process.env.PORT;
 const DATABASE_URL = process.env.DATABASE_URL;
@@ -32,7 +41,7 @@ app.get("/", (req, res) => {
     res.send("Server Running Successfully");
 })
 
-app.listen(PORT, () => { 
-    console.log(`Server Listening at http://localhost:${PORT}`) 
+app.listen(PORT, () => {
+    console.log(`Server Listening at http://localhost:${PORT}`)
 });
 
