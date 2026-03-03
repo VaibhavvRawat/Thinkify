@@ -1,16 +1,23 @@
+import crypto from 'crypto';
 import bcrypt from 'bcrypt';
 import { check, validationResult } from 'express-validator';
 import jwt from 'jsonwebtoken';
 
-import UserModel from "../models/userSchema.js"
+import UserModel from "../models/userSchema.js";
 import PostModel from '../models/postSchema.js';
 import ProductModel from '../models/productSchema.js';
 import TaskModel from '../models/taskSchema.js';
+import sendVerificationEmail from '../utils/sendVerificationEmail.js';
+
+/** Hash a raw token with SHA-256 for safe DB storage */
+const hashToken = (token) => crypto.createHash('sha256').update(token).digest('hex');
 
 const registration = [
   check('fullName').matches(/^[a-zA-Z ]+$/).withMessage('Only alphabets and at least one space are allowed'),
   check('email').isEmail().withMessage('Enter a Valid Email'),
-  check('password').isLength({ min: 8 }).withMessage('Password must be at least 8 characters long').matches(/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).*$/).withMessage('Password must contain at least one lowercase letter, one uppercase letter, and one digit'),
+  check('password')
+    .isLength({ min: 8 }).withMessage('Password must be at least 8 characters long')
+    .matches(/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).*$/).withMessage('Password must contain at least one lowercase letter, one uppercase letter, and one digit'),
   async (req, res) => {
     try {
       const errors = validationResult(req);
@@ -19,38 +26,58 @@ const registration = [
       }
 
       const { fullName, email, password } = req.body;
+
       const existingUser = await UserModel.findOne({ email });
       if (existingUser) {
-        return res.status(400).json({ status: false, message: "User already exists" });
+        return res.status(409).json({ status: false, message: "An account with this email already exists" });
       }
 
-      const bcryptSaltRounds = parseInt(process.env.BCRYPT_GEN_SALT_NUMBER);
-      const bcryptSalt = await bcrypt.genSalt(bcryptSaltRounds);
+      // Hash password
+      const saltRounds = parseInt(process.env.BCRYPT_GEN_SALT_NUMBER) || 10;
+      const bcryptSalt = await bcrypt.genSalt(saltRounds);
       const hashPassword = await bcrypt.hash(password, bcryptSalt);
+
+      // Generate a secure random verification token
+      const rawToken = crypto.randomBytes(32).toString('hex');
+      const tokenHash = hashToken(rawToken);
+      const tokenExpiry = new Date(Date.now() + parseInt(process.env.EMAIL_VERIFICATION_EXPIRES));
 
       const userData = new UserModel({
         fullName,
         email,
         password: hashPassword,
-        createdAt: new Date(),
-        role: "user"
+        role: "user",
+        isVerified: false,
+        verificationToken: tokenHash,
+        verificationTokenExpiry: tokenExpiry,
       });
+
       const savedUser = await userData.save();
-      if (savedUser) {
-        const token = jwt.sign({ userId: savedUser._id }, process.env.JWT_SECRET_KEY, { expiresIn: process.env.COOKIE_EXPIRES });
-        // const expires = new Date(Date.now() + (parseInt(process.env.COOKIE_EXPIRES)) * 24 * 60 * 60 * 1000);
-        // res.cookie(process.env.COOKIE_KEY, token, {
-        //     httpOnly: false,
-        //     secure: true,
-        //     sameSite: 'none',
-        //     expires
-        // }).status(200).json({ status: true, message: "Registration Successful" });
-        res.json({ status: true, message: "Registration Successful", token, user: savedUser });
-      } else {
-        res.status(500).json({ status: false, message: "Something Went Wrong" });
+      if (!savedUser) {
+        return res.status(500).json({ status: false, message: "Registration failed. Please try again." });
       }
+
+      // Send verification email (non-blocking — don't let email failure kill registration)
+      try {
+        await sendVerificationEmail(email, fullName, rawToken);
+      } catch (emailError) {
+        console.error('[registration] Email send failed:', emailError.message);
+        // Clean up the saved user so they can retry registration
+        await UserModel.findByIdAndDelete(savedUser._id);
+        return res.status(500).json({
+          status: false,
+          message: "Failed to send verification email. Please check your email address and try again.",
+        });
+      }
+
+      // Do NOT issue JWT here — wait until email is verified
+      return res.status(201).json({
+        status: true,
+        message: "Registration successful! Please check your inbox and verify your email address to activate your account.",
+      });
+
     } catch (error) {
-      console.error(error);
+      console.error('[registration]', error);
       res.status(500).json({ status: false, message: "Internal Server Error" });
     }
   }
@@ -60,35 +87,128 @@ const login = async (req, res) => {
   try {
     const { email, password } = req.body;
     if (!email || !password) {
-      return res.status(400).json({ status: false, message: "All fields are required" });
+      return res.status(400).json({ status: false, message: "Email and password are required" });
     }
 
     const existingUser = await UserModel.findOne({ email });
     if (!existingUser) {
-      return res.status(401).json({ status: false, message: "Invalid Email or User does not exist" });
+      return res.status(401).json({ status: false, message: "Invalid credentials" });
     }
 
     const isMatch = await bcrypt.compare(password, existingUser.password);
     if (!isMatch) {
-      return res.status(401).json({ status: false, message: "Wrong Password" });
+      return res.status(401).json({ status: false, message: "Invalid credentials" });
     }
 
-    const token = jwt.sign({ userId: existingUser._id }, process.env.JWT_SECRET_KEY, { expiresIn: process.env.COOKIE_EXPIRES });
-    // const expires = new Date(Date.now() + (parseInt(process.env.COOKIE_EXPIRES)) * 24 * 60 * 60 * 1000);
-    // res.cookie(process.env.COOKIE_KEY, token, {
-    //     httpOnly: false,
-    //     secure: true,
-    //     sameSite: 'none',
-    //     expires
-    // }).status(200).json({ status: true, message: "Login Successful" });
-    res.status(200).json({ status: true, message: "Login Successful", token, user: existingUser });
+    // Block login for unverified accounts
+    if (!existingUser.isVerified) {
+      return res.status(403).json({
+        status: false,
+        message: "Please verify your email before logging in. Check your inbox or request a new verification link.",
+        unverified: true,
+      });
+    }
+
+    const token = jwt.sign(
+      { userId: existingUser._id },
+      process.env.JWT_SECRET_KEY,
+      { expiresIn: process.env.COOKIE_EXPIRES || '7d' }
+    );
+
+    // Strip password hash from response
+    const userResponse = existingUser.toObject();
+    delete userResponse.password;
+    delete userResponse.verificationToken;
+    delete userResponse.verificationTokenExpiry;
+
+    return res.status(200).json({ status: true, message: "Login Successful", token, user: userResponse });
 
   } catch (error) {
-    console.error(error);
+    console.error('[login]', error);
     res.status(500).json({ status: false, message: "Internal Server Error" });
   }
-}
+};
 
+/**
+ * GET /api/users/verify-email/:token
+ * Verifies the user's email using the raw token from the email link.
+ * Hashes the token and matches it against the stored hash.
+ */
+const verifyEmail = async (req, res) => {
+  try {
+    const { token } = req.params;
+    if (!token) {
+      return res.status(400).json({ status: false, message: "Verification token is required" });
+    }
+
+    const tokenHash = hashToken(token);
+
+    const user = await UserModel.findOne({
+      verificationToken: tokenHash,
+      verificationTokenExpiry: { $gt: new Date() },   // token must not be expired
+    });
+
+    if (!user) {
+      return res.status(400).json({
+        status: false,
+        message: "This verification link is invalid or has expired. Please request a new one.",
+        expired: true,
+      });
+    }
+
+    user.isVerified = true;
+    user.verificationToken = null;
+    user.verificationTokenExpiry = null;
+    await user.save();
+
+    return res.status(200).json({ status: true, message: "Email verified successfully! You can now log in." });
+
+  } catch (error) {
+    console.error('[verifyEmail]', error);
+    res.status(500).json({ status: false, message: "Internal Server Error" });
+  }
+};
+
+/**
+ * POST /api/users/resend-verification
+ * Body: { email }
+ * Generates a fresh token and re-sends the verification email.
+ */
+const resendVerification = async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) {
+      return res.status(400).json({ status: false, message: "Email is required" });
+    }
+
+    const user = await UserModel.findOne({ email });
+    if (!user) {
+      // Don't reveal whether the email is registered
+      return res.status(200).json({ status: true, message: "If that email is registered, a new verification link has been sent." });
+    }
+
+    if (user.isVerified) {
+      return res.status(400).json({ status: false, message: "This account is already verified. Please log in." });
+    }
+
+    // Generate fresh token
+    const rawToken = crypto.randomBytes(32).toString('hex');
+    const tokenHash = hashToken(rawToken);
+    const tokenExpiry = new Date(Date.now() + parseInt(process.env.EMAIL_VERIFICATION_EXPIRES));
+
+    user.verificationToken = tokenHash;
+    user.verificationTokenExpiry = tokenExpiry;
+    await user.save();
+
+    await sendVerificationEmail(email, user.fullName, rawToken);
+
+    return res.status(200).json({ status: true, message: "A new verification email has been sent. Please check your inbox." });
+
+  } catch (error) {
+    console.error('[resendVerification]', error);
+    res.status(500).json({ status: false, message: "Internal Server Error" });
+  }
+};
 
 const getUserData = async (req, res) => {
   try {
@@ -352,4 +472,4 @@ const removeUser = async (req, res) => {
 
 }
 
-export { registration, login, getUserData, changePassword, getUsers, removeUser, getUserActivity }
+export { registration, login, verifyEmail, resendVerification, getUserData, changePassword, getUsers, removeUser, getUserActivity };

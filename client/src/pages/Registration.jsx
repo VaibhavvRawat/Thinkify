@@ -39,48 +39,34 @@ const Registration = () => {
       email: "",
       password: "",
     },
-    // resolver: yupResolver(schema),
+    resolver: yupResolver(schema),
   });
   // form submit
   const onSubmit = async (data) => {
     try {
       const response = await axios.post(
-        `http://localhost:5000/api/users/registration`,
+        `${import.meta.env.VITE_SERVER_ENDPOINT}/users/registration`,
         data,
         { withCredentials: true }
       );
       if (response.data.status) {
-        Cookies.set(import.meta.env.VITE_TOKEN_KEY, response.data.token, {
-          expires: Number(import.meta.env.VITE_COOKIE_EXPIRES),
-          path: "", 
-        });
-        Cookies.set(import.meta.env.VITE_USER_ROLE, response.data.user.role, {
-          expires: Number(import.meta.env.VITE_COOKIE_EXPIRES),
-          path: "",
-        });
-        if (response.data.user.role === "user") {
-          navigate("/profile");
-        } else if (response.data.user.role === "admin") {
-          navigate("/dashboard");
-        } else {
-          setAlertBoxOpenStatus(true);
-          setAlertSeverity("error");
-          setAlertMessage("Something Went Wrong");
-        }
+        // Registration successful — no JWT yet, must verify email first
+        setAlertBoxOpenStatus(true);
+        setAlertSeverity("success");
+        setAlertMessage(response.data.message);
+        // Give the user a moment to read the message, then go to login
+        setTimeout(() => navigate("/login"), 3500);
       } else {
         setAlertBoxOpenStatus(true);
         setAlertSeverity("error");
         setAlertMessage(response.data.message);
       }
     } catch (error) {
-      console.log(error);
+      console.error(error);
       setAlertBoxOpenStatus(true);
       setAlertSeverity("error");
-      setAlertMessage("Something Went Wrong");
-      // server error message with status code
-      error.response.data.message
-        ? setAlertMessage(error.response.data.message)
-        : setAlertMessage(error.message);
+      const message = error?.response?.data?.message || error?.message || "Something Went Wrong";
+      setAlertMessage(message);
     }
   };
   // check if user is already logged in
@@ -98,7 +84,7 @@ const Registration = () => {
       Cookies.remove(import.meta.env.VITE_USER_ROLE, { path: "" });
     }
   }, []);
-  
+
   return (
     <>
       <Box height="100vh" sx={{ display: "flex" }}>

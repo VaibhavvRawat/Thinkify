@@ -10,7 +10,11 @@ import router from './routes/route.js';
 dotenv.config();
 
 // ─── Startup Environment Guard ───────────────────────────────────────────────
-const REQUIRED_ENV_VARS = ["JWT_SECRET_KEY", "BCRYPT_GEN_SALT_NUMBER", "DATABASE_URL", "DATABASE_NAME", "PORT"];
+const REQUIRED_ENV_VARS = [
+    "JWT_SECRET_KEY", "BCRYPT_GEN_SALT_NUMBER",
+    "DATABASE_URL", "DATABASE_NAME", "PORT",
+    "EMAIL_USER", "EMAIL_PASS", "CLIENT_URL", "EMAIL_VERIFICATION_EXPIRES",
+];
 const missingVars = REQUIRED_ENV_VARS.filter((key) => !process.env[key]);
 if (missingVars.length > 0) {
     console.error(`❌ Missing required environment variables: ${missingVars.join(", ")}`);
