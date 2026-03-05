@@ -1,6 +1,5 @@
 import { Box, Typography, TextField, Button, Divider } from "@mui/material";
 import { Link, useNavigate } from "react-router-dom";
-import GoogleIcon from "@mui/icons-material/Google";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
@@ -9,6 +8,7 @@ import { useEffect } from "react";
 import Cookies from "js-cookie";
 import useThinkify from "../hooks/useThinkify";
 import AlertBox from "../../components/common/AlertBox";
+import GoogleLoginButton from "../../components/common/GoogleLoginButton";
 
 const schema = yup.object().shape({
   fullName: yup.string().required("Full Name is required"),
@@ -234,14 +234,7 @@ const Registration = () => {
             </Box>
             <Divider sx={{ my: 1, color: "white" }}>OR</Divider>
             <Box>
-              <Button
-                type="submit"
-                variant="contained"
-                fullWidth
-                startIcon={<GoogleIcon />}
-              >
-                Continue With Google
-              </Button>
+              <GoogleLoginButton />
             </Box>
             <Box>
               <Typography variant="body2" color="white" sx={{ mt: 4 }}>

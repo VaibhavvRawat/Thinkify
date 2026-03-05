@@ -8,7 +8,6 @@ import {
   Divider,
 } from "@mui/material";
 import { Link, useNavigate } from "react-router-dom";
-import GoogleIcon from "@mui/icons-material/Google";
 import { useForm } from "react-hook-form";
 import Cookies from "js-cookie";
 import { useEffect } from "react";
@@ -17,6 +16,7 @@ import useThinkify from "../hooks/useThinkify";
 import AlertBox from "../../components/common/AlertBox";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
+import GoogleLoginButton from "../../components/common/GoogleLoginButton";
 
 const schema = yup.object().shape({
   email: yup.string().email("Invalid email").required("Email is required"),
@@ -45,7 +45,7 @@ const Login = () => {
   const onSubmit = async (data) => {
     try {
       const response = await axios.post(
-        `http://localhost:5000/api/users/login`,
+        `${import.meta.env.VITE_SERVER_ENDPOINT}/users/login`,
         data
       );
 
@@ -73,14 +73,11 @@ const Login = () => {
         setAlertMessage(response.data.message);
       }
     } catch (error) {
-      console.log(error);
+      console.error(error);
       setAlertBoxOpenStatus(true);
       setAlertSeverity("error");
-      setAlertMessage("Something Went Wrong");
-      // server error message with status code
-      error.response.data.message
-        ? setAlertMessage(error.response.data.message)
-        : setAlertMessage(error.message);
+      const message = error?.response?.data?.message || error?.message || "Something Went Wrong";
+      setAlertMessage(message);
     }
   };
 
@@ -140,6 +137,8 @@ const Login = () => {
               <TextField
                 fullWidth
                 placeholder="Enter Email"
+                autoComplete="new-password"
+                inputProps={{ autoComplete: "new-password" }}
                 sx={{
                   mb: 1,
                   color: "white",
@@ -175,6 +174,8 @@ const Login = () => {
                 fullWidth
                 placeholder="Enter Password"
                 type="password"
+                autoComplete="new-password"
+                inputProps={{ autoComplete: "new-password" }}
                 sx={{
                   mb: 1,
                   color: "white",
@@ -229,14 +230,7 @@ const Login = () => {
             </Box>
             <Divider sx={{ my: 1, color: "white" }}>OR</Divider>
             <Box>
-              <Button
-                type="submit"
-                variant="contained"
-                fullWidth
-                startIcon={<GoogleIcon />}
-              >
-                Continue With Google
-              </Button>
+              <GoogleLoginButton />
             </Box>
             <Box>
               <Typography variant="body2" color="white" sx={{ mt: 4 }}>

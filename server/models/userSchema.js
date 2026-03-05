@@ -15,7 +15,7 @@ const userSchema = new mongoose.Schema({
   },
   password: {
     type: String,
-    required: true,
+    required: false,   // Google-auth users have a placeholder, not a real password
   },
   role: {
     type: String,
@@ -25,6 +25,10 @@ const userSchema = new mongoose.Schema({
   image: {
     type: String,
     default: null,
+  },
+  googleId: {
+    type: String,
+    default: null,   // set only for users who signed in via Google
   },
   // ─── Email Verification ───────────────────────────────────────────────
   isVerified: {
