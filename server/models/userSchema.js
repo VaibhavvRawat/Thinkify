@@ -43,6 +43,15 @@ const userSchema = new mongoose.Schema({
     type: Date,
     default: null,
   },
+  // ─── Password Reset ───────────────────────────────────────────────────
+  passwordResetToken: {
+    type: String,
+    default: null,   // stores SHA-256 hash of the emailed raw token
+  },
+  passwordResetExpiry: {
+    type: Date,
+    default: null,   // 15 minutes from request time
+  },
   // ──────────────────────────────────────────────────────────────────────
   createdAt: {
     type: Date,

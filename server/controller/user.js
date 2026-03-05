@@ -8,6 +8,7 @@ import PostModel from '../models/postSchema.js';
 import ProductModel from '../models/productSchema.js';
 import TaskModel from '../models/taskSchema.js';
 import sendVerificationEmail from '../utils/sendVerificationEmail.js';
+import sendPasswordResetEmail from '../utils/sendPasswordResetEmail.js';
 
 /** Hash a raw token with SHA-256 for safe DB storage */
 const hashToken = (token) => crypto.createHash('sha256').update(token).digest('hex');
@@ -472,4 +473,118 @@ const removeUser = async (req, res) => {
 
 }
 
-export { registration, login, verifyEmail, resendVerification, getUserData, changePassword, getUsers, removeUser, getUserActivity };
+/**
+ * POST /api/users/request-reset
+ * Body: { email }
+ * Always returns 200 — same response whether email exists or not (prevents enumeration).
+ */
+const requestPasswordReset = async (req, res) => {
+  const GENERIC_MSG = "If that email is registered, you'll receive a password reset link shortly.";
+  try {
+    const { email } = req.body;
+    if (!email) {
+      return res.status(400).json({ status: false, message: "Email is required" });
+    }
+
+    const user = await UserModel.findOne({ email: email.toLowerCase().trim() });
+
+    // No user — return same generic message (prevent enumeration)
+    if (!user) {
+      return res.status(200).json({ status: true, message: GENERIC_MSG });
+    }
+
+    // Google-auth users have no real password — can't reset via email
+    if (user.googleId && (!user.password || user.password.startsWith('google_oauth_'))) {
+      return res.status(400).json({
+        status: false,
+        message: "This account uses Google sign-in. Please use 'Continue with Google' to log in.",
+      });
+    }
+
+    // Generate raw token, hash it for DB storage
+    const rawToken = crypto.randomBytes(32).toString('hex');
+    const tokenHash = hashToken(rawToken);
+    const expiry = new Date(Date.now() + 15 * 60 * 1000);  // 15 minutes
+
+    user.passwordResetToken = tokenHash;
+    user.passwordResetExpiry = expiry;
+    await user.save();
+
+    // Send reset email
+    try {
+      await sendPasswordResetEmail(email, user.fullName, rawToken);
+    } catch (emailErr) {
+      console.error('[requestPasswordReset] Email send failed:', emailErr.message);
+      // Clear the stored token so a broken email can't leave a dangling token
+      user.passwordResetToken = null;
+      user.passwordResetExpiry = null;
+      await user.save();
+      return res.status(500).json({ status: false, message: "Failed to send reset email. Please try again." });
+    }
+
+    return res.status(200).json({ status: true, message: GENERIC_MSG });
+
+  } catch (error) {
+    console.error('[requestPasswordReset]', error);
+    res.status(500).json({ status: false, message: "Internal Server Error" });
+  }
+};
+
+/**
+ * POST /api/users/reset-password/:token
+ * Body: { newPassword }
+ * Verifies hashed token, enforces password rules, bcrypts and saves, clears token (single-use).
+ */
+const resetPassword = async (req, res) => {
+  try {
+    const { token } = req.params;
+    const { newPassword } = req.body;
+
+    if (!token || !newPassword) {
+      return res.status(400).json({ status: false, message: "Token and new password are required" });
+    }
+
+    // Enforce password strength
+    const pwPattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
+    if (!pwPattern.test(newPassword)) {
+      return res.status(400).json({
+        status: false,
+        message: "Password must be at least 8 characters and include uppercase, lowercase, and a number",
+      });
+    }
+
+    const tokenHash = hashToken(token);
+
+    const user = await UserModel.findOne({
+      passwordResetToken: tokenHash,
+      passwordResetExpiry: { $gt: new Date() },  // token must not be expired
+    });
+
+    if (!user) {
+      return res.status(400).json({
+        status: false,
+        message: "This reset link is invalid or has expired. Please request a new one.",
+        expired: true,
+      });
+    }
+
+    // Bcrypt the new password
+    const saltRounds = parseInt(process.env.BCRYPT_GEN_SALT_NUMBER) || 10;
+    const hashedPassword = await bcrypt.hash(newPassword, saltRounds);
+
+    // Save new password and immediately invalidate token (single-use)
+    user.password = hashedPassword;
+    user.passwordResetToken = null;
+    user.passwordResetExpiry = null;
+    await user.save();
+
+    console.log(`[resetPassword] Password updated successfully for: ${user.email}`);
+    return res.status(200).json({ status: true, message: "Password reset successful! You can now log in with your new password." });
+
+  } catch (error) {
+    console.error('[resetPassword]', error);
+    res.status(500).json({ status: false, message: "Internal Server Error" });
+  }
+};
+
+export { registration, login, verifyEmail, resendVerification, getUserData, changePassword, getUsers, removeUser, getUserActivity, requestPasswordReset, resetPassword };

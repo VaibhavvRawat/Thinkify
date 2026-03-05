@@ -21,6 +21,8 @@ import PublicRoute from "../layouts/PublicRoute";
 import Product from "../pages/Product";
 import Subscription from "../pages/Subscription";
 import VerifyEmail from "../pages/VerifyEmail";
+import ForgotPassword from "../pages/ForgotPassword";
+import ResetPassword from "../pages/ResetPassword";
 
 const router = createBrowserRouter([
   {
@@ -38,6 +40,14 @@ const router = createBrowserRouter([
   {
     path: "/verify-email/:token",
     element: <VerifyEmail />,
+  },
+  {
+    path: "/forgot-password",
+    element: <ForgotPassword />,
+  },
+  {
+    path: "/reset-password/:token",
+    element: <ResetPassword />,
   },
   {
     path: "/profile",
