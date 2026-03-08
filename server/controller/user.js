@@ -96,20 +96,6 @@ const login = async (req, res) => {
       return res.status(401).json({ status: false, message: "Invalid credentials" });
     }
 
-    const isMatch = await bcrypt.compare(password, existingUser.password);
-    if (!isMatch) {
-      return res.status(401).json({ status: false, message: "Invalid credentials" });
-    }
-
-    // Block login for unverified accounts
-    if (!existingUser.isVerified) {
-      return res.status(403).json({
-        status: false,
-        message: "Please verify your email before logging in. Check your inbox or request a new verification link.",
-        unverified: true,
-      });
-    }
-
     const token = jwt.sign(
       { userId: existingUser._id },
       process.env.JWT_SECRET_KEY,
