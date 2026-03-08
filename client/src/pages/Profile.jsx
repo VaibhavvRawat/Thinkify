@@ -66,23 +66,24 @@ const Profile = () => {
 
   return (
     <>
-      <Grid container spacing={2}>
+      <Grid container spacing={3} alignItems="stretch">
         <Grid xs={12} sm={6} item>
           <Box
             sx={{
               display: "flex",
-              mb: "10px",
+              height: "100%",
               justifyContent: "space-between",
-              gap: "10px",
+              gap: "24px",
+              flexWrap: "wrap",
             }}
           >
             <Box
               sx={{
                 backgroundColor: "#59e3a7",
                 padding: "5px 10px 15px 5px",
-                borderRadius: "5px",
+                borderRadius: "12px",
                 flex: "1",
-                boxShadow: "0px 0px 3px 0px #1b2e35",
+                boxShadow: "0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06)",
               }}
             >
               <Box
@@ -117,9 +118,9 @@ const Profile = () => {
               sx={{
                 backgroundColor: "#59e3a7",
                 padding: "5px 10px 15px 5px",
-                borderRadius: "5px",
+                borderRadius: "12px",
                 flex: "1",
-                boxShadow: "0px 0px 3px 0px #1b2e35",
+                boxShadow: "0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06)",
               }}
             >
               <Box
@@ -154,9 +155,9 @@ const Profile = () => {
               sx={{
                 backgroundColor: "#59e3a7",
                 padding: "5px 10px 15px 5px",
-                borderRadius: "5px",
+                borderRadius: "12px",
                 flex: "1",
-                boxShadow: "0px 0px 3px 0px #1b2e35",
+                boxShadow: "0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06)",
               }}
             >
               <Box
@@ -189,12 +190,12 @@ const Profile = () => {
             </Box>
           </Box>
         </Grid>
-        <Grid xs={12} sm={6} item>
+        <Grid xs={12} sm={6} item sx={{ display: "flex" }}>
           <ProfileCardDetails data={data} />
         </Grid>
       </Grid>
 
-      <Grid container spacing={2} sx={{ mt: "4px" }}>
+      <Grid container spacing={3} sx={{ mt: "24px" }}>
         <Grid item xs={12} md={4}>
           <OngoingTask />
         </Grid>
@@ -205,7 +206,9 @@ const Profile = () => {
           <RecentPost />
         </Grid>
       </Grid>
-      <ActivityGrid />
+      <Box sx={{ mt: "24px" }}>
+        <ActivityGrid />
+      </Box>
     </>
   );
 };

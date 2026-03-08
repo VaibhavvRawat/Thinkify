@@ -25,14 +25,14 @@ export default function NavBar() {
                                 </Box>
                             </Link>
                             <Box >
-                            {
-                                !cookie && <>
-                                <ButtonGroup >
-                                    <Link to="/registration"><Button sx={{ backgroundColor: "#1b2e35", color: "white", "&:hover": { backgroundColor: "#1b2e35" } }}>Join</Button></Link>
-                                    <Link to="/login"><Button sx={{ backgroundColor: "#1b2e35", color: "white", "&:hover": { backgroundColor: "#1b2e35" } }}>Login</Button></Link>
-                                </ButtonGroup>
-                                </>
-                            }
+                                {
+                                    !cookie && <>
+                                        <ButtonGroup >
+                                            <Link to="/registration"><Button sx={{ backgroundColor: "#1b2e35", color: "white", borderRadius: "8px", "&:hover": { backgroundColor: "#1b2e35" } }}>Join</Button></Link>
+                                            <Link to="/login"><Button sx={{ backgroundColor: "#1b2e35", color: "white", borderRadius: "8px", "&:hover": { backgroundColor: "#1b2e35" } }}>Login</Button></Link>
+                                        </ButtonGroup>
+                                    </>
+                                }
                             </Box>
                         </Box>
                     </Box>

@@ -167,7 +167,7 @@ const UserSideBar = ({ children }) => {
             </ListItem>
           </List>
         </Drawer>
-        <Box sx={{ width: "100%", margin: "10px" }}>{children}</Box>
+        <Box sx={{ width: "100%", minWidth: 0, margin: "10px", overflowX: "hidden", boxSizing: "border-box" }}>{children}</Box>
       </Box>
       <Footer />
     </div>

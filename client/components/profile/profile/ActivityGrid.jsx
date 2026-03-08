@@ -87,97 +87,99 @@ const ActivityGrid = () => {
   }, []);
 
   return (
-    <Container maxWidth="lg" sx={{ margin: "30px auto" }}>
-      <Grid container spacing={1} wrap="nowrap" alignItems="flex-start">
-        <Grid
-          item
-          container
-          sx={{
-            margin: "20px 0 0 0",
-            paddingLeft: "0px",
-            paddingTop: "0px",
-            width: "auto",
-          }}
-          flexDirection="column"
-        >
-          {dayNames.map((dayName, index) => (
-            <Grid
-              item
-              key={index}
-              sx={{
-                width: 15,
-                height: 15,
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
-                marginBottom: "5px",
-              }}
-            >
-              <span style={{ fontSize: "10px", lineHeight: "0" }}>
-                {dayName}
-              </span>
-            </Grid>
-          ))}
-        </Grid>
-        <Grid
-          item
-          container
-          direction="row"
-          wrap="nowrap"
-          alignItems="flex-start"
-        >
-          {weeks.map((week, weekIndex) => {
-            const firstDayOfWeek = week[0];
-            const currentMonth = firstDayOfWeek.date.getMonth();
-            const isNewMonth = lastMonth !== currentMonth;
-            lastMonth = currentMonth;
-
-            return (
+    <div style={{ width: "100%", overflowX: "auto" }}>
+      <Container maxWidth={false} sx={{ margin: "30px auto" }}>
+        <Grid container spacing={1} wrap="nowrap" alignItems="flex-start">
+          <Grid
+            item
+            container
+            sx={{
+              margin: "20px 0 0 0",
+              paddingLeft: "0px",
+              paddingTop: "0px",
+              width: "auto",
+            }}
+            flexDirection="column"
+          >
+            {dayNames.map((dayName, index) => (
               <Grid
                 item
-                key={weekIndex}
-                container
-                direction="column"
-                sx={{ margin: "0 5px 0 0", padding: "0", width: "auto" }}
+                key={index}
+                sx={{
+                  width: 15,
+                  height: 15,
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  marginBottom: "5px",
+                }}
               >
-                {isNewMonth ? (
-                  <span
-                    style={{
-                      textAlign: "center",
-                      fontSize: "10px",
-                      fontWeight: "bold",
-                      marginBottom: "5px",
-                    }}
-                  >
-                    {monthNames[currentMonth]}
-                  </span>
-                ) : (
-                  <div style={{ height: "15px", marginBottom: "5px" }} />
-                )}
-                {week.map((day, dayIndex) => (
-                  <Grid item key={dayIndex}>
-                    <Card
-                      sx={{
-                        width: 15,
-                        height: 15,
-                        cursor: "pointer",
-                        marginBottom: "5px",
-                        backgroundColor:
-                          day.activity === 0
-                            ? "#EBEDF0"
-                            : `rgba(0, 128, 0, ${day.activity / 5})`,
-                      }}
-                      title={`${day.date.toDateString()}: ${day.activity
-                        } contributions`}
-                    />
-                  </Grid>
-                ))}
+                <span style={{ fontSize: "10px", lineHeight: "0" }}>
+                  {dayName}
+                </span>
               </Grid>
-            );
-          })}
+            ))}
+          </Grid>
+          <Grid
+            item
+            container
+            direction="row"
+            wrap="nowrap"
+            alignItems="flex-start"
+          >
+            {weeks.map((week, weekIndex) => {
+              const firstDayOfWeek = week[0];
+              const currentMonth = firstDayOfWeek.date.getMonth();
+              const isNewMonth = lastMonth !== currentMonth;
+              lastMonth = currentMonth;
+
+              return (
+                <Grid
+                  item
+                  key={weekIndex}
+                  container
+                  direction="column"
+                  sx={{ margin: "0 5px 0 0", padding: "0", width: "auto" }}
+                >
+                  {isNewMonth ? (
+                    <span
+                      style={{
+                        textAlign: "center",
+                        fontSize: "10px",
+                        fontWeight: "bold",
+                        marginBottom: "5px",
+                      }}
+                    >
+                      {monthNames[currentMonth]}
+                    </span>
+                  ) : (
+                    <div style={{ height: "15px", marginBottom: "5px" }} />
+                  )}
+                  {week.map((day, dayIndex) => (
+                    <Grid item key={dayIndex}>
+                      <Card
+                        sx={{
+                          width: 15,
+                          height: 15,
+                          cursor: "pointer",
+                          marginBottom: "5px",
+                          backgroundColor:
+                            day.activity === 0
+                              ? "#EBEDF0"
+                              : `rgba(0, 128, 0, ${day.activity / 5})`,
+                        }}
+                        title={`${day.date.toDateString()}: ${day.activity
+                          } contributions`}
+                      />
+                    </Grid>
+                  ))}
+                </Grid>
+              );
+            })}
+          </Grid>
         </Grid>
-      </Grid>
-    </Container>
+      </Container>
+    </div>
   );
 };
 
