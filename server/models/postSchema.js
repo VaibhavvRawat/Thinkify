@@ -63,6 +63,10 @@ const postSchema = new mongoose.Schema({
     ]
 });
 
+// Compound index for O(log N) explore feed queries:
+// covers { visibility: "public" } + sorted createdAt cursor scans.
+postSchema.index({ visibility: 1, createdAt: -1 });
+
 const PostModel = mongoose.model('Post', postSchema);
 
 export default PostModel;

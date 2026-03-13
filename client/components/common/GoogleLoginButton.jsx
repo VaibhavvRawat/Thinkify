@@ -63,6 +63,7 @@ const GoogleLoginButton = () => {
             setAlertMessage('Google sign-in was cancelled or failed. Please try again.');
         },
         flow: 'implicit',  // returns { access_token } — sent to backend via /auth/google
+        prompt: 'select_account', // always show the account chooser
     });
 
     return (

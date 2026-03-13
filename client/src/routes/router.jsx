@@ -23,6 +23,7 @@ import Subscription from "../pages/Subscription";
 import VerifyEmail from "../pages/VerifyEmail";
 import ForgotPassword from "../pages/ForgotPassword";
 import ResetPassword from "../pages/ResetPassword";
+import ExploreFeed from "../pages/ExploreFeed";
 
 const router = createBrowserRouter([
   {
@@ -127,6 +128,9 @@ const router = createBrowserRouter([
   }, {
     path: "/subscription",
     element: <PublicRoute><Subscription /></PublicRoute>
+  }, {
+    path: "/explore",
+    element: <PublicRoute><ExploreFeed /></PublicRoute>,
   }, {
     path: "/dashboard",
     element: <AdminSideBar />,

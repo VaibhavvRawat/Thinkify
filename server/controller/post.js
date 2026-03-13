@@ -274,4 +274,54 @@ const handleVisibility = async (req, res) => {
     }
 }
 
-export { addPost, removePost, editPost, getAllPost, getSinglePost, addComment, addReaction, handleVisibility };
+/**
+ * GET /api/posts/explore
+ * Public endpoint — no auth required.
+ * Query params:
+ *   cursor  (ISO date string) — createdAt of the last seen post; omit for first page.
+ *   limit   (number, default 20)
+ *
+ * Uses the compound index { visibility: 1, createdAt: -1 } for O(log N) scans.
+ * Returns: { posts, nextCursor }
+ */
+const getExploreFeed = async (req, res) => {
+    try {
+        const PAGE_SIZE = Math.min(parseInt(req.query.limit) || 20, 50);
+        const { cursor } = req.query;
+
+        // Build the query — only public posts, optionally starting from cursor
+        const query = { visibility: 'public' };
+        if (cursor) {
+            const cursorDate = new Date(cursor);
+            if (isNaN(cursorDate.getTime())) {
+                return res.status(400).json({ status: false, message: 'Invalid cursor value' });
+            }
+            query.createdAt = { $lt: cursorDate };
+        }
+
+        const posts = await PostModel
+            .find(query)
+            .sort({ createdAt: -1 })
+            .limit(PAGE_SIZE)
+            .populate('authorId', 'fullName image')
+            .lean(); // .lean() returns plain JS objects — faster, less memory
+
+        // nextCursor is the createdAt of the last item; null when this is the final page
+        const nextCursor = posts.length === PAGE_SIZE
+            ? posts[posts.length - 1].createdAt.toISOString()
+            : null;
+
+        return res.status(200).json({
+            status: true,
+            message: 'Data Fetched Successfully',
+            posts,
+            nextCursor,
+        });
+
+    } catch (error) {
+        console.error('[getExploreFeed]', error);
+        res.status(500).json({ status: false, message: 'Internal Server Error' });
+    }
+};
+
+export { addPost, removePost, editPost, getAllPost, getSinglePost, addComment, addReaction, handleVisibility, getExploreFeed };

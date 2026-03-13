@@ -1,10 +1,25 @@
-import { AppBar, Toolbar, Box, Typography, Button, ButtonGroup } from '@mui/material';
-import { Link } from 'react-router-dom'
-import Cookies from 'js-cookie'
+import { AppBar, Toolbar, Box, Typography, Button, ButtonGroup, Avatar, Chip } from '@mui/material';
+import { Link } from 'react-router-dom';
+import Cookies from 'js-cookie';
+import { jwtDecode } from 'jwt-decode';
 import AlertBox from '../../components/common/AlertBox';
 
 export default function NavBar() {
-    const cookie = Cookies.get(import.meta.env.VITE_COOKIE_KEY)
+    const token = Cookies.get(import.meta.env.VITE_TOKEN_KEY);
+
+    let user = null;
+    if (token) {
+        try {
+            user = jwtDecode(token);
+        } catch {
+            // invalid token — treat as logged out
+        }
+    }
+
+    const initials = user?.fullName
+        ? user.fullName.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2)
+        : '';
+
     return (
         <Box>
             <AppBar position="static" sx={{ backgroundColor: "transparent", borderBottom: "1px solid #59e3a7", padding: "5px 0" }} elevation={0} >
@@ -15,24 +30,58 @@ export default function NavBar() {
                                 <Box sx={{ display: "flex", justifyContent: "space-between", gap: "10px" }}>
                                     <img src="./images/favicon.ico" width="55" alt="Thinkify" />
                                     <Typography
-                                        sx={{
-                                            fontFamily: "Platypi",
-                                            color: "#1b2e35"
-                                        }}
+                                        sx={{ fontFamily: "Platypi", color: "#1b2e35" }}
                                         variant="h3"
                                         component="h3"
                                     >Thinkify</Typography>
                                 </Box>
                             </Link>
-                            <Box >
-                                {
-                                    !cookie && <>
-                                        <ButtonGroup >
-                                            <Link to="/registration"><Button sx={{ backgroundColor: "#1b2e35", color: "white", borderRadius: "8px", "&:hover": { backgroundColor: "#1b2e35" } }}>Join</Button></Link>
-                                            <Link to="/login"><Button sx={{ backgroundColor: "#1b2e35", color: "white", borderRadius: "8px", "&:hover": { backgroundColor: "#1b2e35" } }}>Login</Button></Link>
-                                        </ButtonGroup>
-                                    </>
-                                }
+                            <Box>
+                                {user ? (
+                                    <Link to="/profile" style={{ textDecoration: 'none' }}>
+                                        <Chip
+                                            avatar={
+                                                <Avatar
+                                                    src={user?.image || ''}
+                                                    sx={{
+                                                        bgcolor: '#1b2e35',
+                                                        color: '#59e3a7',
+                                                        fontWeight: 'bold',
+                                                        fontSize: '13px',
+                                                    }}
+                                                >
+                                                    {initials}
+                                                </Avatar>
+                                            }
+                                            label={user?.fullName || 'My Profile'}
+                                            sx={{
+                                                backgroundColor: '#1b2e35',
+                                                color: 'white',
+                                                fontWeight: 600,
+                                                fontSize: '14px',
+                                                px: 1,
+                                                py: 2.5,
+                                                borderRadius: '999px',
+                                                border: '2px solid #59e3a7',
+                                                cursor: 'pointer',
+                                                transition: 'all 0.2s ease',
+                                                '&:hover': {
+                                                    backgroundColor: '#243d46',
+                                                    boxShadow: '0 0 0 3px rgba(89,227,167,0.25)',
+                                                },
+                                            }}
+                                        />
+                                    </Link>
+                                ) : (
+                                    <ButtonGroup>
+                                        <Link to="/registration">
+                                            <Button sx={{ backgroundColor: "#1b2e35", color: "white", borderRadius: "8px", "&:hover": { backgroundColor: "#1b2e35" } }}>Join</Button>
+                                        </Link>
+                                        <Link to="/login">
+                                            <Button sx={{ backgroundColor: "#1b2e35", color: "white", borderRadius: "8px", "&:hover": { backgroundColor: "#1b2e35" } }}>Login</Button>
+                                        </Link>
+                                    </ButtonGroup>
+                                )}
                             </Box>
                         </Box>
                     </Box>

@@ -25,6 +25,7 @@ import useThinkify from "../hooks/useThinkify";
 import AlertBox from "../../components/common/AlertBox";
 import { useEffect } from "react";
 import SellIcon from '@mui/icons-material/Sell';
+import TravelExploreIcon from '@mui/icons-material/TravelExplore';
 
 const UserSideBar = ({ children }) => {
   const navigate = useNavigate();
@@ -67,6 +68,11 @@ const UserSideBar = ({ children }) => {
       label: "Setting",
       url: "/setting",
       icon: <SettingsIcon />,
+    },
+    {
+      label: "Explore",
+      url: "/explore",
+      icon: <TravelExploreIcon />,
     },
   ];
 
@@ -148,22 +154,26 @@ const UserSideBar = ({ children }) => {
               sx={{ borderBottom: "1px solid lightgray" }}
               component="div"
             >
-              <NavLink
+              <button
                 onClick={handleLogOut}
-                component="button"
                 style={{
                   width: "100%",
                   textDecoration: "none",
                   display: "flex",
                   alignItems: "center",
                   color: "inherit",
+                  background: "none",
+                  border: "none",
+                  cursor: "pointer",
+                  padding: 0,
+                  font: "inherit",
                 }}
               >
                 <ListItemIcon sx={{ color: "inherit" }}>
                   <LogoutIcon />
                 </ListItemIcon>
                 <ListItemText primary={"Sign Out"} />
-              </NavLink>
+              </button>
             </ListItem>
           </List>
         </Drawer>
