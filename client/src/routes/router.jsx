@@ -24,6 +24,8 @@ import VerifyEmail from "../pages/VerifyEmail";
 import ForgotPassword from "../pages/ForgotPassword";
 import ResetPassword from "../pages/ResetPassword";
 import ExploreFeed from "../pages/ExploreFeed";
+import PrivacyPolicy from "../pages/PrivacyPolicy";
+import TermsOfService from "../pages/TermsOfService";
 
 const router = createBrowserRouter([
   {
@@ -144,6 +146,14 @@ const router = createBrowserRouter([
         element: <Users />,
       },
     ],
+  },
+  {
+    path: "/privacy-policy",
+    element: <PrivacyPolicy />,
+  },
+  {
+    path: "/terms-of-service",
+    element: <TermsOfService />,
   },
   {
     path: "*",
