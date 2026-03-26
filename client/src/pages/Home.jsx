@@ -3,6 +3,7 @@ import AOS from "aos";
 import "aos/dist/aos.css";
 
 import Banner from "../../components/home/Banner";
+import ExploreSection from "../../components/home/ExploreSection";
 import FAQ from "../../components/home/FAQ";
 import Features from "../../components/home/features/Features";
 import Membership from "../../components/home/membership/Membership";
@@ -20,6 +21,7 @@ const Home = () => {
     <>
       <NavBar />
       <Banner />
+      <ExploreSection />
       <Features />
       <Newsletter />
       <Membership />

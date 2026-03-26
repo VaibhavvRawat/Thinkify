@@ -1,4 +1,4 @@
-import { Box, Grid, TextField, Typography, Stack, Chip } from '@mui/material';
+import { Box, Grid, TextField, Typography, Stack, Chip, Button } from '@mui/material';
 import ConnectWithoutContactIcon from '@mui/icons-material/ConnectWithoutContact';
 
 const Banner = () => {
@@ -22,13 +22,38 @@ const Banner = () => {
                     <Typography sx={{ color: "#797979" }} variant="body1">At Thinkify, our mission is to provide a dynamic and intuitive platform that empowers individuals to transform their ideas into actionable tasks.</Typography>
                     <Box sx={{ margin: "30px 0 35px 0" }}>
                         <form action="" method="post" >
-                            <TextField
-                                placeholder="Search Here ..."
-                                sx={{
-                                    width: '75%',
-                                }}
-
-                            />
+                            <Box sx={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                                <TextField
+                                    placeholder="Search Here ..."
+                                    sx={{ width: '65%' }}
+                                />
+                                <Button
+                                    onClick={() =>
+                                        document
+                                            .getElementById('explore-section')
+                                            ?.scrollIntoView({ behavior: 'smooth' })
+                                    }
+                                    sx={{
+                                        backgroundColor: '#59e3a7',
+                                        color: '#1b2e35',
+                                        fontWeight: 700,
+                                        fontSize: '14px',
+                                        borderRadius: '999px',
+                                        px: '24px',
+                                        py: '14px',
+                                        textTransform: 'none',
+                                        boxShadow: '0 4px 14px rgba(89,227,167,0.35)',
+                                        whiteSpace: 'nowrap',
+                                        '&:hover': {
+                                            backgroundColor: '#38d492',
+                                            boxShadow: '0 6px 20px rgba(89,227,167,0.5)',
+                                        },
+                                        transition: 'all 0.2s ease',
+                                    }}
+                                >
+                                    ✦ Explore
+                                </Button>
+                            </Box>
                         </form>
                     </Box>
                     <Stack direction="row" spacing={1}>
