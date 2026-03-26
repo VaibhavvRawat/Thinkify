@@ -8,6 +8,7 @@ import {
     Divider,
     Button,
 } from "@mui/material";
+import { motion } from "framer-motion";
 import PropTypes from "prop-types";
 import { Link, useNavigate } from "react-router-dom";
 import VisibilityIcon from "@mui/icons-material/Visibility";
@@ -19,16 +20,17 @@ const SLATE = "#1b2e35";
 const CARD_SX = {
     background: "#ffffff",
     borderRadius: "14px",
+    // box-shadow transition only — transform handled by Framer Motion
     boxShadow: "0 4px 6px -1px rgba(0,0,0,0.08), 0 2px 4px -1px rgba(0,0,0,0.04)",
-    transition: "box-shadow 0.25s ease, transform 0.25s ease",
-    "&:hover": {
-        boxShadow: "0 12px 24px -4px rgba(0,0,0,0.12), 0 4px 8px -2px rgba(0,0,0,0.06)",
-        transform: "translateY(-3px)",
-    },
+    transition: "box-shadow 0.25s ease",
     overflow: "hidden",
     height: "100%",
     display: "flex",
     flexDirection: "column",
+};
+
+const CARD_HOVER_SX = {
+    boxShadow: "0 12px 24px -4px rgba(0,0,0,0.12), 0 4px 8px -2px rgba(0,0,0,0.06)",
 };
 
 /**
@@ -65,7 +67,15 @@ const ExplorePostCard = ({ post }) => {
     const likesLabel = formatCount(likes);
 
     return (
-        <Card sx={CARD_SX}>
+        <motion.div
+            whileHover={{ scale: 1.025, y: -4 }}
+            transition={{ type: "spring", stiffness: 280, damping: 22 }}
+            style={{ height: "100%" }}
+        >
+        <Card sx={CARD_SX} className="explore-card"
+            onMouseEnter={(e) => Object.assign(e.currentTarget.style, { boxShadow: CARD_HOVER_SX.boxShadow })}
+            onMouseLeave={(e) => Object.assign(e.currentTarget.style, { boxShadow: "" })}
+        >
             <CardContent
                 sx={{
                     p: "20px",
@@ -204,6 +214,7 @@ const ExplorePostCard = ({ post }) => {
                 </Box>
             </CardContent>
         </Card>
+        </motion.div>
     );
 };
 

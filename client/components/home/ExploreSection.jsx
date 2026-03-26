@@ -12,12 +12,39 @@ import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { motion } from "framer-motion";
 
 import ExplorePostCard from "./ExplorePostCard";
 
 const ENDPOINT = `${import.meta.env.VITE_SERVER_ENDPOINT}/posts/explore`;
 const MINT = "#59e3a7";
 const SLATE = "#1b2e35";
+
+// ── Animation variants ────────────────────────────────────────────────────────
+const fadeUp = {
+    hidden: { opacity: 0, y: 24 },
+    visible: { opacity: 1, y: 0 },
+};
+
+const staggerContainer = {
+    hidden: {},
+    visible: {
+        transition: {
+            staggerChildren: 0.1,
+            delayChildren: 0.15,
+        },
+    },
+};
+
+const cardVariant = {
+    hidden: { opacity: 0, y: 28 },
+    visible: {
+        opacity: 1,
+        y: 0,
+        transition: { duration: 0.45, ease: [0.25, 0.46, 0.45, 0.94] },
+    },
+};
+// ─────────────────────────────────────────────────────────────────────────────
 
 /** Skeleton placeholder cards shown while loading */
 const CardSkeleton = () => (
@@ -78,81 +105,80 @@ const ExploreSection = () => {
                 py: { xs: "48px", md: "72px" },
             }}
         >
-            {/* ── Section header ───────────────────────────────────────── */}
-            <Box
-                sx={{
-                    display: "flex",
-                    alignItems: { xs: "flex-start", sm: "center" },
-                    justifyContent: "space-between",
-                    flexDirection: { xs: "column", sm: "row" },
-                    gap: "16px",
-                    mb: "12px",
-                }}
+            {/* ── Section header (animates first) ──────────────────────── */}
+            <motion.div
+                variants={fadeUp}
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: false, amount: 0.2 }}
+                transition={{ duration: 0.55, ease: [0.25, 0.46, 0.45, 0.94] }}
             >
-                <Box sx={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                    <Box
-                        sx={{
-                            width: 44,
-                            height: 44,
-                            borderRadius: "12px",
-                            background: `${MINT}22`,
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                        }}
-                    >
-                        <AutoAwesomeIcon sx={{ color: MINT, fontSize: "22px" }} />
-                    </Box>
-                    <Box>
-                        <Typography
-                            variant="h4"
-                            component="h2"
-                            sx={{
-                                fontWeight: 800,
-                                color: SLATE,
-                                fontSize: { xs: "22px", md: "28px" },
-                                lineHeight: 1.2,
-                            }}
-                        >
-                            Explore Ideas from Creators
-                        </Typography>
-                        <Typography
-                            sx={{
-                                fontSize: "14px",
-                                color: "#64748b",
-                                mt: "4px",
-                            }}
-                        >
-                            Discover blogs and posts shared by the community
-                        </Typography>
-                    </Box>
-                </Box>
-
-                <Button
-                    endIcon={<ArrowForwardIcon />}
-                    onClick={() => navigate("/explore")}
+                <Box
                     sx={{
-                        fontSize: "13px",
-                        fontWeight: 600,
-                        color: SLATE,
-                        backgroundColor: `${MINT}25`,
-                        borderRadius: "999px",
-                        px: "20px",
-                        py: "8px",
-                        textTransform: "none",
-                        whiteSpace: "nowrap",
-                        "&:hover": {
-                            backgroundColor: MINT,
-                            color: SLATE,
-                        },
-                        transition: "all 0.2s ease",
+                        display: "flex",
+                        alignItems: { xs: "flex-start", sm: "center" },
+                        justifyContent: "space-between",
+                        flexDirection: { xs: "column", sm: "row" },
+                        gap: "16px",
+                        mb: "12px",
                     }}
                 >
-                    View all
-                </Button>
-            </Box>
+                    <Box sx={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                        <Box
+                            sx={{
+                                width: 44,
+                                height: 44,
+                                borderRadius: "12px",
+                                background: `${MINT}22`,
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                            }}
+                        >
+                            <AutoAwesomeIcon sx={{ color: MINT, fontSize: "22px" }} />
+                        </Box>
+                        <Box>
+                            <Typography
+                                variant="h4"
+                                component="h2"
+                                sx={{
+                                    fontWeight: 800,
+                                    color: SLATE,
+                                    fontSize: { xs: "22px", md: "28px" },
+                                    lineHeight: 1.2,
+                                }}
+                            >
+                                Explore Ideas from Creators
+                            </Typography>
+                            <Typography sx={{ fontSize: "14px", color: "#64748b", mt: "4px" }}>
+                                Discover blogs and posts shared by the community
+                            </Typography>
+                        </Box>
+                    </Box>
 
-            <Divider sx={{ mb: "36px", borderColor: "#e2e8f0" }} />
+                    <Button
+                        endIcon={<ArrowForwardIcon />}
+                        onClick={() => navigate("/explore")}
+                        sx={{
+                            fontSize: "13px",
+                            fontWeight: 600,
+                            color: SLATE,
+                            backgroundColor: `${MINT}25`,
+                            borderRadius: "999px",
+                            px: "20px",
+                            py: "8px",
+                            textTransform: "none",
+                            whiteSpace: "nowrap",
+                            "&:hover": { backgroundColor: MINT, color: SLATE },
+                            transition: "all 0.2s ease",
+                        }}
+                    >
+                        View all
+                    </Button>
+                </Box>
+
+                <Divider sx={{ mb: "36px", borderColor: "#e2e8f0" }} />
+            </motion.div>
 
             {/* ── Error state ───────────────────────────────────────────── */}
             {error && (
@@ -161,67 +187,91 @@ const ExploreSection = () => {
                 </Alert>
             )}
 
-            {/* ── Posts grid ────────────────────────────────────────────── */}
-            <Grid container spacing={3}>
-                {loading
-                    ? Array.from({ length: 6 }).map((_, i) => (
-                          <Grid item xs={12} sm={6} lg={4} key={i}>
-                              <CardSkeleton />
-                          </Grid>
-                      ))
-                    : posts.map((post) => (
-                          <Grid item xs={12} sm={6} lg={4} key={post._id}>
-                              <ExplorePostCard post={post} />
-                          </Grid>
-                      ))}
-            </Grid>
+            {/* ── Posts grid (staggered children) ──────────────────────── */}
+            {loading ? (
+                <Grid container spacing={3}>
+                    {Array.from({ length: 6 }).map((_, i) => (
+                        <Grid item xs={12} sm={6} lg={4} key={i}>
+                            <CardSkeleton />
+                        </Grid>
+                    ))}
+                </Grid>
+            ) : (
+                <motion.div
+                    variants={staggerContainer}
+                    initial="hidden"
+                    whileInView="visible"
+                    viewport={{ once: false, amount: 0.1 }}
+                >
+                    <Grid container spacing={3}>
+                        {posts.map((post) => (
+                            <Grid item xs={12} sm={6} lg={4} key={post._id}>
+                                {/* Each card is a motion child driven by cardVariant */}
+                                <motion.div variants={cardVariant} style={{ height: "100%" }}>
+                                    <ExplorePostCard post={post} />
+                                </motion.div>
+                            </Grid>
+                        ))}
+                    </Grid>
+                </motion.div>
+            )}
 
             {/* ── Empty state ───────────────────────────────────────────── */}
             {!loading && !error && posts.length === 0 && (
-                <Box
-                    sx={{
-                        textAlign: "center",
-                        py: "80px",
-                        color: "#94a3b8",
-                    }}
+                <motion.div
+                    variants={fadeUp}
+                    initial="hidden"
+                    whileInView="visible"
+                    viewport={{ once: false }}
+                    transition={{ duration: 0.5 }}
                 >
-                    <AutoAwesomeIcon sx={{ fontSize: "56px", mb: "12px", opacity: 0.35 }} />
-                    <Typography sx={{ fontSize: "16px", fontWeight: 600 }}>
-                        No public posts yet
-                    </Typography>
-                    <Typography sx={{ fontSize: "13px", mt: "4px" }}>
-                        Be the first to share an idea!
-                    </Typography>
-                </Box>
+                    <Box sx={{ textAlign: "center", py: "80px", color: "#94a3b8" }}>
+                        <AutoAwesomeIcon sx={{ fontSize: "56px", mb: "12px", opacity: 0.35 }} />
+                        <Typography sx={{ fontSize: "16px", fontWeight: 600 }}>
+                            No public posts yet
+                        </Typography>
+                        <Typography sx={{ fontSize: "13px", mt: "4px" }}>
+                            Be the first to share an idea!
+                        </Typography>
+                    </Box>
+                </motion.div>
             )}
 
             {/* ── View all CTA (bottom) ─────────────────────────────────── */}
             {!loading && posts.length > 0 && (
-                <Box sx={{ display: "flex", justifyContent: "center", mt: "40px" }}>
-                    <Button
-                        endIcon={<ArrowForwardIcon />}
-                        onClick={() => navigate("/explore")}
-                        variant="outlined"
-                        sx={{
-                            fontSize: "14px",
-                            fontWeight: 600,
-                            color: SLATE,
-                            borderColor: `${MINT}88`,
-                            borderRadius: "999px",
-                            px: "28px",
-                            py: "10px",
-                            textTransform: "none",
-                            "&:hover": {
-                                backgroundColor: MINT,
-                                borderColor: MINT,
+                <motion.div
+                    variants={fadeUp}
+                    initial="hidden"
+                    whileInView="visible"
+                    viewport={{ once: false, amount: 0.5 }}
+                    transition={{ duration: 0.45, delay: 0.1 }}
+                >
+                    <Box sx={{ display: "flex", justifyContent: "center", mt: "40px" }}>
+                        <Button
+                            endIcon={<ArrowForwardIcon />}
+                            onClick={() => navigate("/explore")}
+                            variant="outlined"
+                            sx={{
+                                fontSize: "14px",
+                                fontWeight: 600,
                                 color: SLATE,
-                            },
-                            transition: "all 0.25s ease",
-                        }}
-                    >
-                        See all community posts
-                    </Button>
-                </Box>
+                                borderColor: `${MINT}88`,
+                                borderRadius: "999px",
+                                px: "28px",
+                                py: "10px",
+                                textTransform: "none",
+                                "&:hover": {
+                                    backgroundColor: MINT,
+                                    borderColor: MINT,
+                                    color: SLATE,
+                                },
+                                transition: "all 0.25s ease",
+                            }}
+                        >
+                            See all community posts
+                        </Button>
+                    </Box>
+                </motion.div>
             )}
         </Box>
     );
