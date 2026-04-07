@@ -12,7 +12,7 @@ dotenv.config();
 // ─── Startup Environment Guard ───────────────────────────────────────────────
 const REQUIRED_ENV_VARS = [
     "JWT_SECRET_KEY", "BCRYPT_GEN_SALT_NUMBER",
-    "DATABASE_URL", "DATABASE_NAME", "PORT",
+    "DATABASE_URL", "DATABASE_NAME",
     "EMAIL_USER", "EMAIL_PASS", "CLIENT_URL", "EMAIL_VERIFICATION_EXPIRES",
 ];
 const missingVars = REQUIRED_ENV_VARS.filter((key) => !process.env[key]);
@@ -23,7 +23,7 @@ if (missingVars.length > 0) {
 }
 
 const app = express();
-const PORT = process.env.PORT;
+const PORT = process.env.PORT || 10000;
 const DATABASE_URL = process.env.DATABASE_URL;
 const DATABASE_NAME = process.env.DATABASE_NAME;
 
@@ -31,7 +31,7 @@ app.use(
     cors({
         origin: [
             "http://localhost:5173",
-            "https://thinkify.vercel.app",
+            
         ],
         credentials: true,
     })
