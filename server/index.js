@@ -31,7 +31,7 @@ app.use(
     cors({
         origin: [
             "http://localhost:5173",
-            
+            "https://thinkifyoasis-of-ideas.vercel.app",
         ],
         credentials: true,
     })
